@@ -1,0 +1,214 @@
+---
+const theme = Astro.cookies.get("theme")?.value;
+---
+
+<!doctype html>
+<html lang="en" class={theme}>
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="TODO App" content="Created by Dilan Rojas" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/png" href="/favicon-32x32.png" />
+		<title>Frontend Mentor | Todo app</title>
+	</head>
+	<body>
+		<slot />
+
+		<img class="background-img" src="/bg-desktop-light.jpg" alt="App background">
+	</body>
+</html>
+
+<style is:global>
+	@import url('https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+
+	:root {
+		--theme-transition: background-color .12s ease-in-out;
+    --box-shadow: 0px 0px 25px rgb(0, 0, 0, .08);
+
+		/* Color scheme */
+		--check-bg: linear-gradient(120deg, hsl(192, 100%, 67%), hsl(280, 87%, 65%));
+
+		--accent-100: hsl(220, 98%, 61%);
+
+		--blue-100: hsl(236, 33%, 92%);
+		--blue-200: hsl(234, 39%, 85%);
+		--blue-300: hsl(234, 11%, 52%);
+		--blue-400: hsl(233, 14%, 35%);
+		--blue-500: hsl(237, 14%, 26%);
+		--blue-600: hsl(235, 24%, 19%);
+		--blue-700: hsl(235, 21%, 11%);
+
+		--gray-100: hsl(0, 0%, 98%);
+		--gray-200: hsl(236, 33%, 92%);
+		--gray-300: hsl(233, 11%, 84%);
+		--gray-400: hsl(236, 9%, 61%);
+		--gray-500: hsl(235, 19%, 35%);
+
+		/* Light scheme */
+		--lm-text: var(--blue-700);
+		--lm-text-heading: var(--gray-100);
+		--lm-text-secondary: var(--gray-400);
+		--lm-text-checked: var(--gray-300);
+		--lm-text-accent: var(--accent-100);
+		--lm-body-bg: var(--gray-100);
+		--lm-primary-bg: var(--gray-100);
+
+		/* Dark scheme */
+		--dm-text: var(--blue-100);
+		--dm-text-heading: var(--gray-100);
+		--dm-text-secondary: var(--gray-400);
+		--dm-text-checked: var(--blue-400);
+		--dm-text-accent: var(--accent-100);
+		--dm-body-bg: var(--blue-700);
+		--dm-primary-bg: var(--blue-600);
+
+		/* Current scheme */
+		--text: var(--lm-text);
+		--text-heading: var(--lm-text-heading);
+		--text-checked: var(--lm-text-checked);
+		--text-secondary: var(--lm-text-secondary);
+		--text-accent: var(--lm-text-accent);
+		--body-bg: var(--lm-body-bg);
+		--primary-bg: var(--lm-primary-bg);
+		color-scheme: light;
+
+		/* Fonts */
+		--ff-html: "Josefin Sans", sans-serif;
+	}
+
+	@media (prefers-color-scheme: dark) {
+		:root {
+			--text: var(--dm-text);
+			--text-heading: var(--dm-text-heading);
+			--text-checked: var(--dm-text-checked);
+			--text-secondary: var(--dm-text-secondary);
+			--text-accent: var(--dm-text-accent);
+			--body-bg: var(--dm-body-bg);
+			--primary-bg: var(--dm-primary-bg);
+			color-scheme: dark;
+		}
+	}
+
+	html.dark {
+		--text: var(--dm-text);
+			--text-heading: var(--dm-text-heading);
+			--text-checked: var(--dm-text-checked);
+			--text-secondary: var(--dm-text-secondary);
+			--text-accent: var(--dm-text-accent);
+			--body-bg: var(--dm-body-bg);
+			--primary-bg: var(--dm-primary-bg);
+			color-scheme: dark;
+	}
+
+	html.light {
+		--text: var(--lm-text);
+		--text-heading: var(--lm-text-heading);
+		--text-checked: var(--lm-text-checked);
+		--text-secondary: var(--lm-text-secondary);
+		--text-accent: var(--lm-text-accent);
+		--body-bg: var(--lm-body-bg);
+		--primary-bg: var(--lm-primary-bg);
+		color-scheme: light;
+	}
+
+	@keyframes zoomIn {
+		from {
+			scale: 0;
+		}
+		to {
+			scale: 1;
+		}
+	}
+
+	@keyframes slideIn {
+		from {
+			opacity: 0;
+			transform: translateX(-30px);
+		}
+		to {
+			opacity: 1;
+			transform: translateX(0px);
+		}
+	}
+
+	@keyframes slideOut {
+		from {
+			opacity: 1;
+		}
+		to {
+			opacity: 0;
+			transform: translateX(30px);
+		}
+	}
+
+	* {
+		margin: 0;
+		padding: 0;
+	}
+
+	*, *::after, *::before {
+		box-sizing: border-box;
+	}
+
+	h1, h2, h3, h4, h5, h6 {
+		line-height: 1;
+	}
+
+	input, button, textarea {
+		font-size: inherit;
+		font-family: inherit;
+		color: currentColor;
+		background-color: transparent;
+	}
+
+	html {
+		line-height: 1.5;
+		font-size: 18px;
+		font-family: var(--ff-html);
+		color: var(--text);
+	}
+
+	body {
+		background-color: var(--body-bg);
+		min-height: 100dvh;
+		transition: var(--theme-transition);
+
+		display: grid;
+		place-content: center;
+	}
+
+	.background-img {
+		position: absolute;
+		z-index: -1;
+		height: 310px;
+		width: 100%;
+		object-fit: cover;
+	}
+
+	/* Utility classes */
+	.container {
+		--width: 32em;
+		--padding: 1rem;
+
+		width: min(var(--width), 100% - (var(--padding) * 2));
+		margin-inline: auto;
+	}
+
+	button {
+		cursor: pointer;
+		border: 0;
+		background: transparent;
+	}
+
+	hr {
+		border: 0;
+		border-top: 1px solid gray;
+		opacity: .2;
+	}
+
+	input,
+  p[class="todo-name"] {
+    margin-left: 1rem;
+  }
+
+</style>

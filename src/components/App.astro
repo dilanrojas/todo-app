@@ -1,0 +1,227 @@
+---
+import ThemeSwitcher from "./ThemeSwitcher.astro"
+import Todo from "./Todo.astro"
+import CreateTodo from "./CreateTodo.astro"
+---
+
+<section class="todo-app container">
+  <header class="todo-header">
+    <h1>TODO</h1>
+    <ThemeSwitcher />
+  </header>
+
+  <CreateTodo />
+
+  <div class="todo-list">
+    <div class="todos-wrapper">
+      <Todo />
+    </div>
+
+    <footer class="todo-list-footer">
+      <div>
+        <p>
+          <span class="items-left">1</span>
+          items left
+        </p>
+      </div>
+      <div class="filters">
+        <button class="active">All</button>
+        <button>Active</button>
+        <button>Completed</button>
+      </div>
+      <div>
+        <button class="clear-completed">Clear completed</button>
+      </div>
+    </footer>
+  </div>
+</section>
+
+<style>
+  .todo-app {
+    --app-padding: 1rem 1.3rem;
+
+    padding: 3em 0em;
+  }
+
+  .todo-header {
+    color: var(--text-heading);
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1.8em;
+    
+    h1 {
+      font-size: 1.9em;
+      letter-spacing: 20px;
+    }
+  }
+  
+  .todo-app > div {
+    background-color: var(--primary-bg);
+    box-shadow: var(--box-shadow);
+    border-radius: 5px;
+    transition: var(--theme-transition);
+  }
+
+  .todos-wrapper {
+    height: 20.67em;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: var(--text-checked) transparent;
+  }
+
+  .todo-list-footer {
+    position: relative;
+    display: grid;
+    height: 100%;
+    grid-template-columns: repeat(3, 1fr);
+    place-content: center;
+    color: var(--text-secondary);
+    font-size: .9em;
+    border-radius: 0px 0px 5px 5px;
+    transition: var(--theme-transition);
+
+    background-color: var(--primary-bg);
+    bottom: 0;
+
+    p {
+      text-wrap: nowrap;
+    }
+
+    button {
+      text-wrap: nowrap;
+    }
+
+    button.active {
+      color: var(--text-accent);
+    }
+
+    div {
+      display: flex;
+      align-items: center;
+      padding: var(--app-padding)
+     }
+
+    div:first-child {
+      justify-content: start;
+      pointer-events: none;
+    }
+
+    div:last-child {
+      justify-content: end;
+      grid-column: 3;
+    }
+
+    div:nth-child(2) button {
+      font-weight: 700;
+      height: 100%;
+    }
+  }
+
+  .filters {
+    display: flex;
+    gap: 1em;
+    height: 100%;
+  }
+
+  @media (width <= 560px) {
+    .todo-app {
+      padding-bottom: 10em;
+    }
+
+    .todos-wrapper {
+      height: 17.5em;
+    }
+
+    .filters {
+      position: absolute;
+      bottom: -125%;
+      width: 100%;
+      justify-content: center;
+      background-color: var(--primary-bg);
+      border-radius: 5px;
+      box-shadow: var(--box-shadow);
+    }
+  }
+</style>
+
+<script>
+  const todoInput = document.querySelector(".input-todo-name") as HTMLInputElement
+  const todoList = document.querySelector(".todos-wrapper") as HTMLElement
+  const newTodoCheckbox = document.querySelector(".create-todo .custom-checkbox") as HTMLElement
+  const clearBtn = document.querySelector(".clear-completed") as HTMLButtonElement
+
+  const todoTemplate = document.querySelector(".todo")
+  todoTemplate.remove()
+
+  let todos = JSON.parse(localStorage.getItem("todos")) || [];
+  localStorage.setItem('todos', JSON.stringify(todos))
+
+  function todoCheckbox(button, element) {
+    button.addEventListener("click", () => {
+      button.toggleAttribute("aria-checked")
+      button.querySelector("img").toggleAttribute("aria-hidden")
+    })
+  }
+
+  function addToStorage(todo, state) {
+    const userTodo = {name: todo, checked: state}
+    todos.push(userTodo)
+    localStorage.setItem("todos", JSON.stringify(todos))
+  }
+  
+  todoInput.addEventListener('keyup', function (e) {
+    if (e.key === 'Enter' && todoInput.value != "") {
+      let newTodo = document.createElement("div")
+      newTodo.innerHTML = todoTemplate.outerHTML
+      newTodo.querySelector(".todo-name").textContent = todoInput.value
+      todoList.appendChild(newTodo)
+      todoCheckbox(newTodo.querySelector(".custom-checkbox"), newTodo.querySelector(".todo-name").textContent)
+
+      if (newTodoCheckbox.hasAttribute("aria-checked")) {
+        newTodo.querySelector(".custom-checkbox").setAttribute("aria-checked", "")
+      }
+
+      newTodoCheckbox.hasAttribute("aria-checked")
+        ? addToStorage(newTodo.querySelector(".todo-name").textContent, true)
+        : addToStorage(newTodo.querySelector(".todo-name").textContent, false)
+
+    }
+  });
+
+  clearBtn.addEventListener("click", () => {
+    const completed = todoList.querySelectorAll<HTMLElement>(".custom-checkbox[aria-checked]")
+    completed.forEach(todo => {
+      const todoWrapper = todo.parentElement.parentElement as HTMLElement
+      todoWrapper.style.animation = "slideOut .2s forwards"
+      todoWrapper.addEventListener("animationend", () => {
+        todoWrapper.remove()
+        let removedTodo = todos.findIndex(todo => todo.name === todoWrapper.querySelector(".todo-name").textContent)
+        todos.splice(removedTodo)
+        localStorage.setItem("todos", JSON.stringify(todos))
+      })
+    })
+  })
+
+  todos.forEach(todo => {
+    let todoName = todo.name
+    let todoChecked = todo.checked
+
+    let storagedTodo = document.createElement("div")
+    storagedTodo.innerHTML = todoTemplate.outerHTML
+    storagedTodo.querySelector(".todo-name").textContent = todoName
+    todoChecked
+      ? storagedTodo.querySelector(".custom-checkbox").setAttribute("aria-checked", "")
+      : ""
+    todoList.appendChild(storagedTodo)
+
+    storagedTodo.querySelector(".custom-checkbox").addEventListener("click", () => {
+      let currentTodo = todos.findIndex(todo => todo.name === storagedTodo.querySelector(".todo-name").textContent)
+      todos[currentTodo].checked
+        ? todos[currentTodo].checked = false
+        : todos[currentTodo].checked = true
+      localStorage.setItem("todos", JSON.stringify(todos))
+    })
+  })
+
+</script>

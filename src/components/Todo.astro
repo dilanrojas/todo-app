@@ -1,0 +1,50 @@
+---
+import Checkbox from "./Checkbox.astro"
+---
+
+<div class="todo">
+  <div class="todo-check">
+    <Checkbox />
+    <p class="todo-name"></p>
+  </div>
+  <hr>
+</div>
+
+<style>
+  .todo-check {
+    display: flex;
+    align-items: start;
+    justify-content: start;
+    padding-inline: 1.3rem;
+    padding-top: 1rem;
+    padding-bottom: .8rem;
+    animation: slideIn .2s forwards;
+  }
+
+  p {
+    padding-top: .1em;
+    position: relative;
+    transition: color .12s ease-in-out;
+  }
+
+  p::after {
+    width: 0%;
+    content: '';
+    position: absolute;
+    align-self: center;
+    top: 50%;
+    left: 0;
+    height: 1px;
+    display: block;
+    background-color: var(--text-checked);
+    transition: width .2s ease-in-out;
+  }
+  
+  .todo-check:has(.custom-checkbox[aria-checked]) > p {
+    color: var(--text-checked);
+  }
+  
+  .todo-check:has(.custom-checkbox[aria-checked]) > p::after {
+    width: 100%;
+  }
+</style>

@@ -1,0 +1,46 @@
+<div class="custom-checkbox">
+  <img src="/icon-check.svg" alt="Icon checked" aria-hidden>
+</div>
+
+<style>
+  .custom-checkbox {
+    --size: 1.4em;
+
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--size);
+    min-height: var(--size);
+    border-radius: 100%;
+    border: 1px solid var(--text-checked);
+
+    img {
+      scale: 0%;
+      transition: scale .15s ease-in-out;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+  }
+
+  .custom-checkbox[aria-checked] {
+    background: var(--check-bg);
+    user-select: none;
+    -webkit-user-select: none;
+
+    img {
+      scale: 100%
+    }
+  }
+</style>
+
+<script>
+  const checkbox = document.querySelectorAll<HTMLElement>(".custom-checkbox")
+
+  checkbox.forEach(button => {
+    button.addEventListener("click", () => {
+      button.toggleAttribute("aria-checked")
+      button.querySelector("img").toggleAttribute("aria-hidden")
+    })
+  })
+</script>
