@@ -14,7 +14,7 @@ const theme = Astro.cookies.get("theme")?.value;
 	<body>
 		<slot />
 
-		<img class="background-img" src="/bg-desktop-light.jpg" alt="App background">
+		<div class="background-img"></div>
 	</body>
 </html>
 
@@ -178,12 +178,68 @@ const theme = Astro.cookies.get("theme")?.value;
 	}
 
 	.background-img {
-		position: absolute;
-		z-index: -1;
-		height: 310px;
-		width: 100%;
-		object-fit: cover;
+    position: absolute;
+    z-index: -1;
+    height: 262px;
+    width: 100%;
+    background-size: cover;
+    background-position: center;
 	}
+
+	/* Dark mode background */
+	html.dark {
+		.background-img {
+			background-image: url("/bg-desktop-dark.jpg");
+		}
+	}
+	
+	@media (prefers-color-scheme: dark) {
+		.background-img {
+			background-image: url("/bg-desktop-dark.jpg");
+		}
+	}
+
+	@media (width <= 560px) {
+		html.dark {
+			.background-img {
+				background-image: url("/bg-mobile-dark.jpg");
+			}
+		}
+	
+		@media (prefers-color-scheme: dark) {
+			.background-img {
+				background-image: url("/bg-mobile-dark.jpg");
+			}
+		}
+	}
+
+	/* Light mode background */
+	html.light {
+		.background-img {
+			background-image: url("/bg-desktop-light.jpg");
+		}
+	}
+
+	@media (prefers-color-scheme: light) {
+		.background-img {
+			background-image: url("/bg-desktop-light.jpg");
+		}
+	}
+
+	@media (width <= 560px) {
+		html.light {
+			.background-img {
+				background-image: url("/bg-mobile-light.jpg");
+			}
+		}
+
+		@media (prefers-color-scheme: light) {
+			.background-img {
+				background-image: url("/bg-mobile-light.jpg");
+			}
+		}
+	}
+
 
 	/* Utility classes */
 	.container {
