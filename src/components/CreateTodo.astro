@@ -10,6 +10,7 @@ import Checkbox from "./Checkbox.astro"
     name="input-todo-name"
     id="input-todo-name"
     autocomplete="off"
+    maxlength="40"
     placeholder="Create a new todo..."
   >
 </div>
@@ -29,7 +30,8 @@ import Checkbox from "./Checkbox.astro"
     input {
       border: 0;
       padding-top: .16em;
-      color: var(--text)
+      color: var(--text);
+      width: 100%;
     }
 
     input::placeholder {

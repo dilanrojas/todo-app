@@ -17,17 +17,18 @@ import CreateTodo from "./CreateTodo.astro"
       <Todo />
     </div>
 
+    <hr>
     <footer class="todo-list-footer">
       <div>
         <p>
-          <span class="items-left">1</span>
+          <span class="items-left"></span>
           items left
         </p>
       </div>
       <div class="filters">
-        <button class="active">All</button>
-        <button>Active</button>
-        <button>Completed</button>
+        <button class="filter-all active">All</button>
+        <button class="filter-active">Active</button>
+        <button class="filter-completed">Completed</button>
       </div>
       <div>
         <button class="clear-completed">Clear completed</button>
@@ -63,11 +64,12 @@ import CreateTodo from "./CreateTodo.astro"
   }
 
   .todos-wrapper {
-    height: 20.67em;
+    height: 20.64445em;
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: thin;
     scrollbar-color: var(--text-checked) transparent;
+    mask-image: linear-gradient(to bottom, black 96%, transparent 100%);
   }
 
   .todo-list-footer {
@@ -94,6 +96,7 @@ import CreateTodo from "./CreateTodo.astro"
 
     button.active {
       color: var(--text-accent);
+      pointer-events: none;
     }
 
     div {
@@ -150,6 +153,7 @@ import CreateTodo from "./CreateTodo.astro"
   const todoList = document.querySelector(".todos-wrapper") as HTMLElement
   const newTodoCheckbox = document.querySelector(".create-todo .custom-checkbox") as HTMLElement
   const clearBtn = document.querySelector(".clear-completed") as HTMLButtonElement
+  const todoLeft = document.querySelector(".items-left") as HTMLSpanElement
 
   const todoTemplate = document.querySelector(".todo")
   todoTemplate.remove()
@@ -157,26 +161,74 @@ import CreateTodo from "./CreateTodo.astro"
   let todos = JSON.parse(localStorage.getItem("todos")) || [];
   localStorage.setItem('todos', JSON.stringify(todos))
 
-  function todoCheckbox(button, element) {
-    button.addEventListener("click", () => {
-      button.toggleAttribute("aria-checked")
-      button.querySelector("img").toggleAttribute("aria-hidden")
-    })
-  }
+  todoLeft.textContent = todos.filter(todo => todo.checked === false).length
 
   function addToStorage(todo, state) {
     const userTodo = {name: todo, checked: state}
     todos.push(userTodo)
     localStorage.setItem("todos", JSON.stringify(todos))
   }
+
+  function todoCheckbox(element, name) {
+    element.addEventListener("click", () => {
+      let currentTodo = todos.findIndex(todo => todo.name === name)
+      todos[currentTodo].checked
+        ? todos[currentTodo].checked = false
+        : todos[currentTodo].checked = true
+      localStorage.setItem("todos", JSON.stringify(todos))
+      element.toggleAttribute("aria-checked")
+      element.querySelector("img").toggleAttribute("aria-hidden")
+      todoLeft.textContent = todos.filter(todo => todo.checked === false).length
+    })
+  }
+
+  function appendList(list) {
+    list.forEach(todo => {
+      let todoName = todo.name
+      let todoChecked = todo.checked
   
+      let storagedTodo = document.createElement("div")
+      storagedTodo.innerHTML = todoTemplate.outerHTML
+      storagedTodo.querySelector(".todo-name").textContent = todoName
+      todoChecked
+        ? storagedTodo.querySelector(".custom-checkbox").setAttribute("aria-checked", "")
+        : ""
+      todoList.appendChild(storagedTodo)
+  
+      storagedTodo.querySelector(".custom-checkbox").addEventListener("click", () => {
+        let currentTodo = todos.findIndex(todo => todo.name === storagedTodo.querySelector(".todo-name").textContent)
+        todos[currentTodo].checked
+          ? todos[currentTodo].checked = false
+          : todos[currentTodo].checked = true
+        localStorage.setItem("todos", JSON.stringify(todos))
+        todoLeft.textContent = todos.filter(todo => todo.checked === false).length
+      })
+    })
+  }
+
+  function filteredCheckbox() {
+    todoList.querySelectorAll<HTMLElement>(".custom-checkbox").forEach(button => {
+      let filteredTodoWrapper = button.parentElement.parentElement
+      button.addEventListener("click", () => {
+        button.toggleAttribute("aria-checked")
+        button.querySelector("img").toggleAttribute("aria-hidden")
+        filteredTodoWrapper.style.animation = "slideOut .2s forwards .14s"
+        filteredTodoWrapper.addEventListener("animationend", () => {
+          filteredTodoWrapper.remove()
+        })
+      })
+    })
+  }
+
   todoInput.addEventListener('keyup', function (e) {
-    if (e.key === 'Enter' && todoInput.value != "") {
+    const coincidences = todos.find(todo => todo.name.toLowerCase() === todoInput.value.toLocaleLowerCase())
+
+    if (e.key === 'Enter' && coincidences == null && todoInput.value != "") {
       let newTodo = document.createElement("div")
       newTodo.innerHTML = todoTemplate.outerHTML
       newTodo.querySelector(".todo-name").textContent = todoInput.value
       todoList.appendChild(newTodo)
-      todoCheckbox(newTodo.querySelector(".custom-checkbox"), newTodo.querySelector(".todo-name").textContent)
+      let currentCheckbox = newTodo.querySelector(".custom-checkbox")
 
       if (newTodoCheckbox.hasAttribute("aria-checked")) {
         newTodo.querySelector(".custom-checkbox").setAttribute("aria-checked", "")
@@ -186,8 +238,15 @@ import CreateTodo from "./CreateTodo.astro"
         ? addToStorage(newTodo.querySelector(".todo-name").textContent, true)
         : addToStorage(newTodo.querySelector(".todo-name").textContent, false)
 
+      todoCheckbox(currentCheckbox, newTodo.querySelector(".todo-name").textContent)
+
+      todoLeft.textContent = todos.filter(todo => todo.checked === false).length
+      todoInput.value = ""
+
+    } else if (e.key === 'Enter' && coincidences != null) {
+      alert("Todo already exists")
     }
-  });
+  })
 
   clearBtn.addEventListener("click", () => {
     const completed = todoList.querySelectorAll<HTMLElement>(".custom-checkbox[aria-checked]")
@@ -203,25 +262,56 @@ import CreateTodo from "./CreateTodo.astro"
     })
   })
 
-  todos.forEach(todo => {
-    let todoName = todo.name
-    let todoChecked = todo.checked
+  appendList(todos)
 
-    let storagedTodo = document.createElement("div")
-    storagedTodo.innerHTML = todoTemplate.outerHTML
-    storagedTodo.querySelector(".todo-name").textContent = todoName
-    todoChecked
-      ? storagedTodo.querySelector(".custom-checkbox").setAttribute("aria-checked", "")
-      : ""
-    todoList.appendChild(storagedTodo)
+  let filteredTodoList = []
+  const filterAll = document.querySelector(".filter-all") as HTMLButtonElement
+  const filterActive = document.querySelector(".filter-active") as HTMLButtonElement
+  const filterCompleted = document.querySelector(".filter-completed") as HTMLButtonElement
+  const filters = document.querySelectorAll<HTMLElement>(".filters button")
 
-    storagedTodo.querySelector(".custom-checkbox").addEventListener("click", () => {
-      let currentTodo = todos.findIndex(todo => todo.name === storagedTodo.querySelector(".todo-name").textContent)
-      todos[currentTodo].checked
-        ? todos[currentTodo].checked = false
-        : todos[currentTodo].checked = true
-      localStorage.setItem("todos", JSON.stringify(todos))
+  filterAll.addEventListener("click", () => {
+    filteredTodoList = todos
+    todoList.innerHTML = ""
+
+    appendList(filteredTodoList)
+    todoList.querySelectorAll<HTMLElement>(".custom-checkbox").forEach(button => {
+      button.addEventListener("click", () => {
+        button.toggleAttribute("aria-checked")
+        button.querySelector("img").toggleAttribute("aria-hidden")
+      })
     })
+
+    filters.forEach(button => {
+      button.classList.remove("active")
+    })
+    filterAll.classList.add("active")
+  })
+
+  filterActive.addEventListener("click", () => {
+    filteredTodoList = todos.filter(todo => todo.checked == false)
+    todoList.innerHTML = ""
+
+    appendList(filteredTodoList)
+    filteredCheckbox()
+
+    filters.forEach(button => {
+      button.classList.remove("active")
+    })
+    filterActive.classList.add("active")
+  })
+
+  filterCompleted.addEventListener("click", () => {
+    filteredTodoList = todos.filter(todo => todo.checked == true)
+    todoList.innerHTML = ""
+
+    appendList(filteredTodoList)
+    filteredCheckbox()
+
+    filters.forEach(button => {
+      button.classList.remove("active")
+    })
+    filterCompleted.classList.add("active")
   })
 
 </script>
