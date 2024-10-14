@@ -53,6 +53,7 @@ import CreateTodo from "./CreateTodo.astro"
     h1 {
       font-size: 1.9em;
       letter-spacing: 20px;
+      text-shadow: 5px 5px 5px rgb(0, 0, 0, .1);
     }
   }
   
@@ -256,14 +257,20 @@ import CreateTodo from "./CreateTodo.astro"
   })
 
   clearBtn.addEventListener("click", () => {
-    const completed = todoList.querySelectorAll<HTMLElement>(".custom-checkbox[aria-checked]")
+    const completed = todoList.querySelectorAll<HTMLElement>(".custom-checkbox[aria-checked]");
     completed.forEach(todo => {
-      const todoWrapper = todo.parentElement.parentElement as HTMLElement
+      const todoWrapper = todo.parentElement.parentElement as HTMLElement;
       todoWrapper.style.animation = "slideOut .2s forwards"
       todoWrapper.addEventListener("animationend", () => {
         todoWrapper.remove()
-        let removedTodo = todos.findIndex(todo => todo.name === todoWrapper.querySelector(".todo-name").textContent)
-        todos.splice(removedTodo)
+        
+        const todoName = todoWrapper.querySelector(".todo-name").textContent
+        const removedTodoIndex = todos.findIndex(todo => todo.name === todoName)
+        
+        if (removedTodoIndex !== -1) {
+          todos.splice(removedTodoIndex, 1)
+        }
+
         localStorage.setItem("todos", JSON.stringify(todos))
       })
     })
