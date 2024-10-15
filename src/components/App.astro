@@ -134,7 +134,7 @@ import CreateTodo from "./CreateTodo.astro"
     }
 
     .todos-wrapper {
-      height: 17.5em;
+      height: 17.2em;
     }
 
     .filters {
@@ -228,6 +228,21 @@ import CreateTodo from "./CreateTodo.astro"
     })
   }
 
+  function removeTodo(todo) {
+    todo.style.animation = "slideOut .2s forwards"
+    todo.addEventListener("animationend", () => {
+      todo.remove()
+      
+      const todoName = todo.querySelector(".todo-name").textContent
+      const removedTodoIndex = todos.findIndex(todo => todo.name === todoName)
+      
+      if (removedTodoIndex !== -1) {
+        todos.splice(removedTodoIndex, 1)
+      }
+      localStorage.setItem("todos", JSON.stringify(todos))
+    })
+  }
+
   todoInput.addEventListener('keyup', function (e) {
     const coincidences = todos.find(todo => todo.name.toLowerCase() === todoInput.value.toLocaleLowerCase())
 
@@ -248,6 +263,13 @@ import CreateTodo from "./CreateTodo.astro"
 
       todoCheckbox(currentCheckbox, newTodo.querySelector(".todo-name").textContent)
 
+      let removeTodoBtn = newTodo.querySelector(".remove-todo-btn") as HTMLElement
+      removeTodoBtn.addEventListener("click", () => {
+        let currentTodo = removeTodoBtn.parentElement.parentElement.parentElement;
+
+        removeTodo(currentTodo)
+      })
+
       todoLeft.textContent = todos.filter(todo => todo.checked === false).length
       todoInput.value = ""
 
@@ -260,19 +282,7 @@ import CreateTodo from "./CreateTodo.astro"
     const completed = todoList.querySelectorAll<HTMLElement>(".custom-checkbox[aria-checked]");
     completed.forEach(todo => {
       const todoWrapper = todo.parentElement.parentElement as HTMLElement;
-      todoWrapper.style.animation = "slideOut .2s forwards"
-      todoWrapper.addEventListener("animationend", () => {
-        todoWrapper.remove()
-        
-        const todoName = todoWrapper.querySelector(".todo-name").textContent
-        const removedTodoIndex = todos.findIndex(todo => todo.name === todoName)
-        
-        if (removedTodoIndex !== -1) {
-          todos.splice(removedTodoIndex, 1)
-        }
-
-        localStorage.setItem("todos", JSON.stringify(todos))
-      })
+      removeTodo(todoWrapper)
     })
   })
 
