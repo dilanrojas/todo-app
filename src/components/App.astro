@@ -211,6 +211,11 @@ import CreateTodo from "./CreateTodo.astro"
         localStorage.setItem("todos", JSON.stringify(todos))
         todoLeft.textContent = todos.filter(todo => todo.checked === false).length
       })
+
+      let removeTodoBtn = storagedTodo.querySelector(".remove-todo-btn") as HTMLElement
+      removeTodoBtn.addEventListener("click", () => {
+        removeTodo(storagedTodo)
+      })
     })
   }
 
@@ -240,6 +245,7 @@ import CreateTodo from "./CreateTodo.astro"
         todos.splice(removedTodoIndex, 1)
       }
       localStorage.setItem("todos", JSON.stringify(todos))
+      todoLeft.textContent = todos.filter(todo => todo.checked === false).length
     })
   }
 
@@ -265,9 +271,7 @@ import CreateTodo from "./CreateTodo.astro"
 
       let removeTodoBtn = newTodo.querySelector(".remove-todo-btn") as HTMLElement
       removeTodoBtn.addEventListener("click", () => {
-        let currentTodo = removeTodoBtn.parentElement.parentElement.parentElement;
-
-        removeTodo(currentTodo)
+        removeTodo(newTodo)
       })
 
       todoLeft.textContent = todos.filter(todo => todo.checked === false).length
