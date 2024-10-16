@@ -111,6 +111,18 @@ const theme = Astro.cookies.get("theme")?.value;
 		color-scheme: light;
 	}
 
+	@keyframes fade {
+		0% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0;
+		}
+		100% {
+			opacity: 1;
+		}
+	}
+
 	@keyframes zoomIn {
 		from {
 			scale: 0;
@@ -266,5 +278,4 @@ const theme = Astro.cookies.get("theme")?.value;
   p[class="todo-name"] {
     margin-left: 1rem;
   }
-
 </style>

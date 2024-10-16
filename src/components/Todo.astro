@@ -62,4 +62,27 @@ import Checkbox from "./Checkbox.astro"
     justify-content: center;
     margin-left: auto;
   }
+
+  .remove-todo-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+		pointer-events: none;
+		scale: 0;
+		transition: scale .15s ease-out;
+  }
+
+  .todo-check:hover .remove-todo-btn {
+    scale: 1;
+    pointer-events: all;
+  }
+
+  @media (width <= 560px) {
+    .remove-todo-btn {
+      transition: none;
+      pointer-events: all;
+      scale: 1;
+      transition: scale .15s ease-out;
+    }
+  }
 </style>

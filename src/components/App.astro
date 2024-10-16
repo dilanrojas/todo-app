@@ -130,6 +130,7 @@ import CreateTodo from "./CreateTodo.astro"
 
   @media (width <= 560px) {
     .todo-app {
+      padding: 1em 0em;
       padding-bottom: 4em;
     }
 
@@ -147,6 +148,7 @@ import CreateTodo from "./CreateTodo.astro"
       box-shadow: var(--box-shadow);
       user-select: none;
       -webkit-user-select: none;
+      transition: var(--theme-transition);
     }
 
     .filters button {
