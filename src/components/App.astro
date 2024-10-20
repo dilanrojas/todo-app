@@ -192,6 +192,10 @@ import ThemeSwitcher from "./ThemeSwitcher.astro";
   const todoInput = $('.add-todo-input') as HTMLInputElement
   const addCheckbox = $('.add-todo .checkbox') as HTMLElement
   const clearTodo = $('.clear-completed') as HTMLButtonElement
+  const filterAll = $('.filter-all') as HTMLButtonElement
+  const filterActive = $('.filter-active') as HTMLButtonElement
+  const filterCompleted = $('.filter-completed') as HTMLButtonElement
+  const filters = $$('.filters button')
   const todoLeft = $('.items-left') as HTMLElement
   
   const todoTemplate = $('.todo') as HTMLElement
@@ -253,14 +257,21 @@ import ThemeSwitcher from "./ThemeSwitcher.astro";
     todoList.appendChild(addedTodo)
 
     // Drag and drop
-    const items = todoList.querySelectorAll("li")
-    items.forEach(item => {
-      item.style.transition = "opacity .12s ease-out"
-      item.addEventListener("dragstart", () => {
-        item.classList.add("dragging")
-      })
-      item.addEventListener("dragend", () => {
-        item.classList.remove("dragging")
+    addedTodo.style.transition = "opacity .12s ease-out"
+    addedTodo.addEventListener("dragstart", () => {
+      addedTodo.classList.add("dragging")
+    })
+    addedTodo.addEventListener("dragend", () => {
+      addedTodo.classList.remove("dragging")
+      todos = []
+      const items = document.querySelectorAll(".todo-list li")
+      items.forEach(item => {
+        const updatedTodo = {
+          name: item.querySelector(".todo-name").textContent,
+          checked: item.querySelector(".checkbox").hasAttribute("aria-checked")
+        }
+        todos.push(updatedTodo)
+        localStorage.setItem("todos", JSON.stringify(todos))
       })
     })
 
@@ -277,7 +288,7 @@ import ThemeSwitcher from "./ThemeSwitcher.astro";
         todoList.insertBefore(draggingItem, nextSibling);
         lastInsertedSibling = nextSibling;
       }
-    };
+    }
 
     todoList.addEventListener("dragover", initTodoList)
     todoList.addEventListener("dragenter", e => e.preventDefault())
@@ -297,4 +308,45 @@ import ThemeSwitcher from "./ThemeSwitcher.astro";
 
   todos.forEach(todo => {
     addTodo(todo.name, todo.checked)
+  })
+
+  filterAll.addEventListener("click", () => {
+    if (!filterAll.classList.contains("active")) {
+      todoList.innerHTML = ""
+      filters.forEach(filter => {
+        filter.classList.remove("active")
+      })
+      filterAll.classList.add("active")
+      todos.forEach(todo => {
+        addTodo(todo.name, todo.checked)
+      })
+    }
+  })
+
+  filterActive.addEventListener("click", () => {
+    if (!filterActive.classList.contains("active")) {
+      todoList.innerHTML = ""
+      filters.forEach(filter => {
+        filter.classList.remove("active")
+      })
+      filterActive.classList.add("active")
+      const actives = todos.filter(todo => todo.checked === false)
+      actives.forEach(active => {
+        addTodo(active.name, active.checked)
+      })
+    }
+  })
+
+  filterCompleted.addEventListener("click", () => {
+    if (!filterCompleted.classList.contains("active")) {
+      todoList.innerHTML = ""
+      filters.forEach(filter => {
+        filter.classList.remove("active")
+      })
+      filterCompleted.classList.add("active")
+      const completed = todos.filter(todo => todo.checked === true)
+      completed.forEach(complete => {
+        addTodo(complete.name, complete.checked)
+      })
+    }
   })
