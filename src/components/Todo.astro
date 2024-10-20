@@ -1,0 +1,64 @@
+---
+import Checkbox from "./Checkbox.astro"
+---
+
+<div class="todo">
+  <Checkbox />
+  <p class="todo-name"></p>
+  <button class="remove-todo">
+    <img src="/icon-cross.svg" alt="Remove todo button">
+  </button>
+</div>
+
+<style>
+  .todo {
+    display: flex;
+    align-items: center;
+    padding: var(--app-padding);
+    border-bottom: 1px solid var(--line);
+    animation: slideIn .15s forwards;
+    
+    & p {
+      display: flex;
+      align-items: center;
+      position: relative;
+      padding-top: var(--app-center);
+      transition: color .12s ease-out;
+      word-wrap: break-word;
+      line-break: anywhere;
+
+      &::before {
+        content: '';
+        position: absolute;
+        width: 0%;
+        height: .1px;
+        background-color: var(--text-secondary);
+        transition: width .12s ease-out;
+      }
+    }
+
+    & button {
+      margin-left: auto;
+      padding-top: var(--app-center);
+      transition: scale .12s ease-out;
+      scale: 0;
+    }
+  }
+
+  .todo:hover {
+    & button {
+      scale: 1;
+    }
+  }
+  
+  .todo:has(.checkbox[aria-checked]) {
+    & p {
+      color: var(--text-checked);
+      user-select: none;
+  
+      &::before {
+        width: 100%;
+      }
+    }
+  }
+</style>

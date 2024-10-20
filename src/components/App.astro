@@ -1,0 +1,300 @@
+---
+import Checkbox from "./Checkbox.astro";
+import Todo from "./Todo.astro";
+import Background from "./Background.astro";
+import ThemeSwitcher from "./ThemeSwitcher.astro";
+---
+
+<section class="app container">
+  <header>
+    <h1>TODO</h1>
+    <ThemeSwitcher />
+  </header>
+
+  <div class="add-todo">
+    <Checkbox />
+    <input
+      type="text"
+      name="add-todo-input"
+      class="add-todo-input"
+      id="add-todo-input"
+      autocomplete="off"
+      maxlength="45"
+      placeholder="Create a new todo..."
+    >
+  </div>
+
+  <div class="list-wrapper">
+    <ul class="todo-list">
+      <Todo />
+    </ul>
+    <footer>
+      <div>
+        <p><span class="items-left"></span> items left</p>
+      </div>
+      <div class="filters">
+        <button class="filter-all active">All</button>
+        <button class="filter-active">Active</button>
+        <button class="filter-completed">Completed</button>
+      </div>
+      <div>
+        <button class="clear-completed">Clear Completed</button>
+      </div>
+    </footer>
+  </div>
+
+
+  <p class="drag-and-drop">Drag and drop to reorder list</p>
+
+  <Background />
+</section>
+
+<style>
+  .app {
+    --app-padding: 1rem 1.3rem;
+    --app-border-radius: 5px;
+    --app-box-shadow: 0px 30px 40px rgba(0, 0, 0, .09);
+    --app-background: var(--bg-primary);
+    --app-center: .18em;
+
+    padding-top: 3.3em;
+    position: relative;
+  }
+
+  .add-todo {
+    border-radius: var(--app-border-radius);
+    padding: var(--app-padding);
+    display: flex;
+    background-color: var(--app-background);
+    margin-bottom: 1em;
+    transition: var(--theme-transition);
+
+    & input {
+      padding-top: var(--app-center);
+      width: 100%;
+    }
+  }
+
+  .list-wrapper {
+    background-color: var(--app-background);
+    transition: var(--theme-transition);
+    box-shadow: var(--app-box-shadow);
+    border-radius: var(--app-border-radius);
+  }
+  
+  .todo-list {
+    height: 20.8em;
+    overflow-y: auto;
+    overflow-x: hidden;
+    mask-image: linear-gradient(to bottom, black 96%, transparent 100%);
+    scrollbar-width: thin;
+    scrollbar-color: var(--text-checked) transparent;
+  }
+
+  header {
+    color: var(--text-heading);
+    margin-bottom: 1.5em;
+    display: flex;
+    justify-content: space-between;
+
+    & h1 {
+      letter-spacing: 18px;
+      font-size: 2.25em;
+    }
+  }
+
+  footer {
+    padding: var(--app-padding);
+    border-radius: 0px 0px var(--app-border-radius) var(--app-border-radius);
+    color: var(--text-secondary);
+    background-color: var(--app-background);
+    transition: var(--theme-transition);
+    border-top: 1px solid var(--line);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    width: 100%;
+    font-size: .85em;
+
+    & .active {
+      color: var(--accent-100)
+    }
+
+    & div:first-child {
+    }
+
+    & .filters {
+      display: inline-flex;
+      gap: 1.5em;
+
+      & button {
+        font-weight: 600;
+      }
+    }
+
+    & div:last-child {
+      display: flex;
+      justify-content: end;
+    }
+
+    & button {
+      transition: color .12s ease-out;
+    }
+
+    & button:hover {
+      color: var(--accent-100);
+    }
+  }
+
+  .drag-and-drop {
+    position: absolute;
+    color: var(--text-secondary);
+    width: 100%;
+    text-align: center;
+    padding-top: 2em;
+    font-size: .8em;
+  }
+
+  @media (width <= 550px) {
+    footer {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .filters {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: absolute;
+      margin-top: 3.1em;
+      padding: var(--app-padding);
+      box-shadow: var(--app-box-shadow);
+      border-radius: var(--app-border-radius);
+      background-color: var(--app-background);
+      z-index: 50;
+      left: 0;
+      width: 100%;
+    }
+
+    .todo-list {
+      height: 17.5em;
+    }
+
+    .drag-and-drop {
+      padding-top: 6.5em;
+    }
+  }
+</style>
+
+<script>
+  const $ = el => document.querySelector(el) 
+  const $$ = el => document.querySelectorAll(el)
+
+  const todoList = $('.todo-list') as HTMLElement
+  const todoInput = $('.add-todo-input') as HTMLInputElement
+  const addCheckbox = $('.add-todo .checkbox') as HTMLElement
+  const clearTodo = $('.clear-completed') as HTMLButtonElement
+  const todoLeft = $('.items-left') as HTMLElement
+  
+  const todoTemplate = $('.todo') as HTMLElement
+  todoTemplate.remove()
+
+  let todos = JSON.parse(localStorage.getItem("todos")) || []
+  todoLeft.textContent = todos.filter(todo => todo.checked === false).length
+
+  function addTodo(name, state) {
+    const addedTodo = document.createElement('li')
+    addedTodo.setAttribute("draggable", "true")
+    addedTodo.innerHTML = todoTemplate.outerHTML
+
+    const addedTodoName = addedTodo.querySelector('.todo-name')
+    addedTodoName.textContent = name
+
+    const addedTodoCheckbox = addedTodo.querySelector('.checkbox')
+    if (state) {
+      addedTodoCheckbox.setAttribute("aria-checked", "")
+    }
+
+    let checked
+    addedTodoCheckbox.hasAttribute("aria-checked")
+      ? checked = true
+      : checked = false
+
+    // Storage todo if it's not on list
+    if (!todos.find(todo => todo.name.toLowerCase() === addedTodoName.textContent.toLowerCase())) {
+      const userTodo = {name: addedTodoName.textContent, checked: checked}
+      todos.push(userTodo)
+      localStorage.setItem("todos", JSON.stringify(todos))
+    }
+
+    let currentTodo = todos.findIndex(todo => todo.name === addedTodoName.textContent)
+
+    addedTodoCheckbox.addEventListener("click", () => {
+      addedTodoCheckbox.toggleAttribute("aria-checked")
+      todos[currentTodo].checked
+        ? todos[currentTodo].checked = false
+        : todos[currentTodo].checked = true
+      localStorage.setItem("todos", JSON.stringify(todos))
+      todoLeft.textContent = todos.filter(todo => todo.checked === false).length
+    })
+
+    const addedTodoRemove = addedTodo.querySelector(".remove-todo")
+    addedTodoRemove.addEventListener("click", () => {
+      addedTodo.classList.add("removing")
+      addedTodo.addEventListener("animationend", () => {
+        addedTodo.remove()
+      })
+
+      if (currentTodo !== -1) {
+        todos.splice(currentTodo, 1)
+        localStorage.setItem("todos", JSON.stringify(todos))
+        todoLeft.textContent = todos.filter(todo => todo.checked === false).length
+      }
+    })
+    
+    todoList.appendChild(addedTodo)
+
+    // Drag and drop
+    const items = todoList.querySelectorAll("li")
+    items.forEach(item => {
+      item.style.transition = "opacity .12s ease-out"
+      item.addEventListener("dragstart", () => {
+        item.classList.add("dragging")
+      })
+      item.addEventListener("dragend", () => {
+        item.classList.remove("dragging")
+      })
+    })
+
+    let lastInsertedSibling;
+    const initTodoList = (e) => {
+      e.preventDefault();
+      const draggingItem = document.querySelector(".dragging");
+      let siblings = [...todoList.querySelectorAll<HTMLHtmlElement>("li:not(.dragging)")];
+      let nextSibling = siblings.find(sibling => {
+        return e.clientY <= sibling.offsetTop + sibling.offsetHeight / 2;
+      })
+
+      if (nextSibling !== lastInsertedSibling) {
+        todoList.insertBefore(draggingItem, nextSibling);
+        lastInsertedSibling = nextSibling;
+      }
+    };
+
+    todoList.addEventListener("dragover", initTodoList)
+    todoList.addEventListener("dragenter", e => e.preventDefault())
+
+    return [addedTodoName.textContent, checked]
+  }
+
+  todoInput.addEventListener('keyup', (e) => {
+    const coincidences = todos.find(todo => todo.name.toLowerCase() === todoInput.value.toLowerCase())
+
+    if (e.key === 'Enter' && coincidences == null && todoInput.value != "") {
+      addTodo(todoInput.value, addCheckbox.hasAttribute("aria-checked"))
+      todoLeft.textContent = todos.filter(todo => todo.checked === false).length
+      todoInput.value = ""
+    }
+  })
+
+  todos.forEach(todo => {
+    addTodo(todo.name, todo.checked)
+  })

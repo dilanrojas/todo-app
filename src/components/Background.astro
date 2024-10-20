@@ -1,0 +1,43 @@
+<img class="bg-light" src="/bg-desktop-light.jpg" alt="Background light">
+<img class="bg-dark" src="/bg-desktop-dark.jpg" alt="Background dark">
+
+<style>
+  img {
+    left: 0;
+    top: 0;
+    z-index: -1;
+    display: block;
+    position: fixed;
+    width: 100%;
+    height: 260px;
+    object-fit: cover;
+    transition: opacity .12s ease-in-out;
+  }
+
+  /* Light background */
+  @media (prefers-color-scheme: light) {
+    .bg-light { opacity: 1 }
+    .bg-dark { opacity: 0 }
+  }
+
+  html.light {
+    .bg-light { opacity: 1 }
+    .bg-dark { opacity: 0 }
+  }
+
+  /* Dark background */
+  @media (prefers-color-scheme: dark) {
+    .bg-light { opacity: 0 }
+    .bg-dark { opacity: 1 }
+  }
+
+  html.dark {
+    .bg-light { opacity: 0 }
+    .bg-dark { opacity: 1 }
+  }
+
+  @media (width <= 550px) {
+    .bg-dark { content: url("/bg-mobile-dark.jpg") }
+    .bg-light { content: url("/bg-mobile-light.jpg") }
+  }
+</style>

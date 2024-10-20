@@ -1,0 +1,64 @@
+<button class="theme-switcher">
+  <img class="icon-moon" src="/icon-moon.svg" alt="Switch to dark mode">
+  <img class="icon-sun" src="/icon-sun.svg" alt="Switch to light mode" aria-hidden>
+</button>
+
+<style>
+  img {
+    animation: zoomIn .15s forwards
+  }
+</style>
+
+<script>
+  const $ = el => document.querySelector(el)
+  const $$ = el => document.querySelector(el)
+
+  const themeBtn = $('.theme-switcher') as HTMLButtonElement
+  const iconMoon = $('.icon-moon') as HTMLImageElement
+  const iconSun = $('.icon-sun') as HTMLImageElement
+  const html = document.documentElement
+  const backgroundLight = $('.bg-light') as HTMLImageElement
+  const backgroundDark = $('.bg-dark') as HTMLImageElement
+
+  let currentTheme
+  function saveTheme(theme) {
+    currentTheme = theme
+    const d = new Date()
+    d.setTime(d.getTime() + 365 * 86400000)
+    document.cookie = `theme=${theme};path=\;expires=${d.toUTCString()}`
+  }
+
+  if (window.matchMedia('(prefers-color-scheme: light').matches) {
+    currentTheme = "light"
+    iconMoon.removeAttribute("aria-hidden")
+    iconSun.setAttribute("aria-hidden", "")
+  } else {
+    currentTheme = "dark"
+    iconMoon.setAttribute("aria-hidden", "")
+    iconSun.removeAttribute("aria-hidden")
+  }
+
+  if (html.classList.contains("dark")) {
+    iconMoon.setAttribute("aria-hidden", "")
+    iconSun.removeAttribute("aria-hidden")
+  } else if (html.classList.contains("light")) {
+    iconSun.setAttribute("aria-hidden", "")
+    iconMoon.removeAttribute("aria-hidden")
+  }
+
+  themeBtn.addEventListener("click", () => {
+    if (iconSun.hasAttribute("aria-hidden")) {
+      iconSun.toggleAttribute("aria-hidden")
+      iconMoon.toggleAttribute("aria-hidden")
+      html.classList.remove("light")
+      html.classList.add("dark")
+      saveTheme("dark")
+    } else {
+      iconMoon.toggleAttribute("aria-hidden")
+      iconSun.toggleAttribute("aria-hidden")
+      html.classList.remove("dark")
+      html.classList.add("light")
+      saveTheme("light")
+    }
+  })
+</script>
