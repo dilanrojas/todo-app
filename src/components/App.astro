@@ -89,8 +89,9 @@ import ThemeSwitcher from "./ThemeSwitcher.astro";
     mask-image: linear-gradient(to bottom, black 96%, transparent 100%);
     scrollbar-width: thin;
     scrollbar-color: var(--text-checked) transparent;
+    scrollbar-gutter: stable;
   }
-
+  
   header {
     color: var(--text-heading);
     margin-bottom: 1.5em;
@@ -253,11 +254,12 @@ import ThemeSwitcher from "./ThemeSwitcher.astro";
         addedTodo.remove()
       })
 
-      if (currentTodo !== -1) {
-        todos.splice(currentTodo, 1)
-        localStorage.setItem("todos", JSON.stringify(todos))
-        todoLeft.textContent = todos.filter(todo => todo.checked === false).length
-      }
+      let toRemove = todos.findIndex(todo => 
+        todo.name === addedTodoName.textContent
+      )
+      todos.splice(toRemove, 1)
+      localStorage.setItem("todos", JSON.stringify(todos))
+      todoLeft.textContent = todos.filter(todo => todo.checked === false).length
     })
     
     todoList.appendChild(addedTodo)
