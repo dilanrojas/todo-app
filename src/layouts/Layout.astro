@@ -133,13 +133,13 @@ const { title } = Astro.props;
 	}
 
 	@keyframes slideIn {
-		0% { transform: translateX(-30px); opacity: 0 }
+		0% { transform: translateX(-50px); opacity: 0 }
 		100% { transform: translateX(0px); opacity: 1 }
 	}
 
 	@keyframes slideOut {
 		0% { transform: translateX(0px); opacity: 1 }
-		100% { transform: translateX(30px); opacity: 0 }
+		100% { transform: translateX(50px); opacity: 0 }
 	}
 
 	* {
@@ -196,7 +196,7 @@ const { title } = Astro.props;
   }
 
 	.removing {
-		animation: slideOut .12s forwards
+		animation: slideOut .15s forwards
 	}
 
 	.dragging {

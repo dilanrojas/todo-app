@@ -204,9 +204,8 @@ import ThemeSwitcher from "./ThemeSwitcher.astro";
   let todos = JSON.parse(localStorage.getItem("todos")) || []
   todoLeft.textContent = todos.filter(todo => todo.checked === false).length
 
-  function addTodo(name, state) {
+  function addTodo(name, state, onFilter, allowDrag) {
     const addedTodo = document.createElement('li')
-    addedTodo.setAttribute("draggable", "true")
     addedTodo.innerHTML = todoTemplate.outerHTML
 
     const addedTodoName = addedTodo.querySelector('.todo-name')
@@ -238,6 +237,13 @@ import ThemeSwitcher from "./ThemeSwitcher.astro";
         : todos[currentTodo].checked = true
       localStorage.setItem("todos", JSON.stringify(todos))
       todoLeft.textContent = todos.filter(todo => todo.checked === false).length
+
+      if (onFilter) {
+        addedTodo.style.animation = "slideOut .15s forwards .2s"
+        addedTodo.addEventListener("animationend", () => {
+          addedTodo.remove()
+        })
+      }
     })
 
     const addedTodoRemove = addedTodo.querySelector(".remove-todo")
@@ -257,41 +263,46 @@ import ThemeSwitcher from "./ThemeSwitcher.astro";
     todoList.appendChild(addedTodo)
 
     // Drag and drop
-    addedTodo.style.transition = "opacity .12s ease-out"
-    addedTodo.addEventListener("dragstart", () => {
-      addedTodo.classList.add("dragging")
-    })
-    addedTodo.addEventListener("dragend", () => {
-      addedTodo.classList.remove("dragging")
-      todos = []
-      const items = document.querySelectorAll(".todo-list li")
-      items.forEach(item => {
-        const updatedTodo = {
-          name: item.querySelector(".todo-name").textContent,
-          checked: item.querySelector(".checkbox").hasAttribute("aria-checked")
+    if (allowDrag) {
+      addedTodo.setAttribute("draggable", "true")
+      addedTodo.style.transition = "opacity .12s ease-out"
+      addedTodo.addEventListener("dragstart", () => {
+        addedTodo.classList.add("dragging")
+      })
+      addedTodo.addEventListener("dragend", () => {
+        addedTodo.classList.remove("dragging")
+        todos = []
+        const items = document.querySelectorAll(".todo-list li")
+        items.forEach(item => {
+          const updatedTodo = {
+            name: item.querySelector(".todo-name").textContent,
+            checked: item.querySelector(".checkbox").hasAttribute("aria-checked")
+          }
+          todos.push(updatedTodo)
+          localStorage.setItem("todos", JSON.stringify(todos))
+        })
+      })
+
+      let lastInsertedSibling;
+      const initTodoList = (e) => {
+        e.preventDefault();
+        const draggingItem = document.querySelector(".dragging");
+        let siblings = [...todoList.querySelectorAll<HTMLHtmlElement>("li:not(.dragging)")];
+        let nextSibling = siblings.find(sibling => {
+          return e.clientY <= sibling.offsetTop + sibling.offsetHeight / 2;
+        })
+
+        if (nextSibling !== lastInsertedSibling) {
+          todoList.insertBefore(draggingItem, nextSibling);
+          lastInsertedSibling = nextSibling;
         }
-        todos.push(updatedTodo)
-        localStorage.setItem("todos", JSON.stringify(todos))
-      })
-    })
-
-    let lastInsertedSibling;
-    const initTodoList = (e) => {
-      e.preventDefault();
-      const draggingItem = document.querySelector(".dragging");
-      let siblings = [...todoList.querySelectorAll<HTMLHtmlElement>("li:not(.dragging)")];
-      let nextSibling = siblings.find(sibling => {
-        return e.clientY <= sibling.offsetTop + sibling.offsetHeight / 2;
-      })
-
-      if (nextSibling !== lastInsertedSibling) {
-        todoList.insertBefore(draggingItem, nextSibling);
-        lastInsertedSibling = nextSibling;
       }
-    }
 
-    todoList.addEventListener("dragover", initTodoList)
-    todoList.addEventListener("dragenter", e => e.preventDefault())
+      todoList.addEventListener("dragover", initTodoList)
+      todoList.addEventListener("dragenter", e => e.preventDefault())
+    } else {
+      addedTodo.removeAttribute("draggable")
+    }
 
     return [addedTodoName.textContent, checked]
   }
@@ -300,53 +311,79 @@ import ThemeSwitcher from "./ThemeSwitcher.astro";
     const coincidences = todos.find(todo => todo.name.toLowerCase() === todoInput.value.toLowerCase())
 
     if (e.key === 'Enter' && coincidences == null && todoInput.value != "") {
-      addTodo(todoInput.value, addCheckbox.hasAttribute("aria-checked"))
+      addTodo(todoInput.value, addCheckbox.hasAttribute("aria-checked"), false, true)
       todoLeft.textContent = todos.filter(todo => todo.checked === false).length
       todoInput.value = ""
     }
   })
 
   todos.forEach(todo => {
-    addTodo(todo.name, todo.checked)
+    addTodo(todo.name, todo.checked, false, true)
   })
 
   filterAll.addEventListener("click", () => {
     if (!filterAll.classList.contains("active")) {
-      todoList.innerHTML = ""
-      filters.forEach(filter => {
-        filter.classList.remove("active")
-      })
-      filterAll.classList.add("active")
-      todos.forEach(todo => {
-        addTodo(todo.name, todo.checked)
-      })
+      todoList.classList.add("removing")
+      todoList.addEventListener("animationend", () => {
+        todoList.innerHTML = ""
+        todoList.classList.remove("removing")
+        filters.forEach(filter => {
+          filter.classList.remove("active")
+        })
+        filterAll.classList.add("active")
+        todos.forEach(todo => {
+          addTodo(todo.name, todo.checked, false, true)
+        })
+      }, {once: true})
     }
   })
 
   filterActive.addEventListener("click", () => {
     if (!filterActive.classList.contains("active")) {
-      todoList.innerHTML = ""
-      filters.forEach(filter => {
-        filter.classList.remove("active")
-      })
-      filterActive.classList.add("active")
-      const actives = todos.filter(todo => todo.checked === false)
-      actives.forEach(active => {
-        addTodo(active.name, active.checked)
-      })
+      todoList.classList.add("removing")
+      todoList.addEventListener("animationend", () => {
+        todoList.innerHTML = ""
+        todoList.classList.remove("removing")
+        filters.forEach(filter => {
+          filter.classList.remove("active")
+        })
+        filterActive.classList.add("active")
+        const actives = todos.filter(todo => todo.checked === false)
+        actives.forEach(active => {
+          addTodo(active.name, active.checked, true, false)
+        })
+      }, {once: true})
     }
   })
 
   filterCompleted.addEventListener("click", () => {
     if (!filterCompleted.classList.contains("active")) {
-      todoList.innerHTML = ""
-      filters.forEach(filter => {
-        filter.classList.remove("active")
-      })
-      filterCompleted.classList.add("active")
-      const completed = todos.filter(todo => todo.checked === true)
-      completed.forEach(complete => {
-        addTodo(complete.name, complete.checked)
-      })
+      todoList.classList.add("removing")
+      todoList.addEventListener("animationend", () => {
+        todoList.innerHTML = ""
+        todoList.classList.remove("removing")
+        filters.forEach(filter => {
+          filter.classList.remove("active")
+        })
+        filterCompleted.classList.add("active")
+        const completed = todos.filter(todo => todo.checked === true)
+        completed.forEach(complete => {
+          addTodo(complete.name, complete.checked, true, false)
+        })
+      }, {once: true})
     }
+
+  })
+
+  clearTodo.addEventListener("click", () => {
+    todos = todos.filter(todo => !todo.checked)
+    todoList.querySelectorAll<HTMLElement>("li").forEach(el => {
+      if (el.querySelector(".checkbox[aria-checked")) {
+        el.classList.add("removing")
+        el.addEventListener("animationend", () => {
+          el.remove()
+        })
+      }
+    })
+    localStorage.setItem("todos", JSON.stringify(todos))
   })
